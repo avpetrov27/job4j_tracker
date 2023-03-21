@@ -14,7 +14,9 @@ public class Library {
         books[3] = book1;
         System.out.println();
         for (Book book : books) {
-            System.out.println(book.getName() + " - " + book.getCount());
+            if ("Clean code".equals(book.getName())) {
+                System.out.println(book.getName() + " - " + book.getCount());
+            }
         }
     }
 }
