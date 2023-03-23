@@ -48,7 +48,7 @@ public class StartUITest {
     }
 
     @Test
-    void whenDeteleItem() {
+    public void whenDeteleItem() {
         Tracker tracker = new Tracker();
         tracker.add(new Item("new item1"));
         tracker.add(new Item("new item2"));
