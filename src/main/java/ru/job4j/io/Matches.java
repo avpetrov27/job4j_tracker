@@ -4,16 +4,12 @@ import java.util.Scanner;
 
 public class Matches {
     private static boolean validate(int matches, int count) {
-        if (matches < 1 || matches > 3) {
+        if (matches < 1 || matches > Math.min(3, count)) {
             System.out.println("Введённое количество должно находится в пределах"
-                    + " от 1 до 3 (включительно).");
-        } else if (count < matches) {
-            System.out.println("Введённое количество не может быть больше числа "
-                    + "оставшихся спичек");
-        } else {
-            return true;
+                    + " от 1 до " + Math.min(3, count) + " (включительно).");
+            return false;
         }
-        return false;
+        return true;
     }
 
     public static void main(String[] args) {
@@ -23,7 +19,7 @@ public class Matches {
         int count = 11;
         while (count > 0) {
             String player = turn ? "Первый игрок" : "Второй игрок";
-            System.out.println(player + ", введите число от 1 до 3:");
+            System.out.println(player + ", введите число от 1 до " + Math.min(3, count) + ":");
             int matches = Integer.parseInt(input.nextLine());
             if (validate(matches, count)) {
                 count -= matches;
