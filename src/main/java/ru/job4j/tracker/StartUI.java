@@ -82,7 +82,8 @@ public class StartUI {
                 case 6 -> {
                     run = false;
                 }
-                default -> System.out.println("Пользователь выбрал: " + select);
+                default -> {
+                }
             }
         }
     }
