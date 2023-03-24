@@ -16,28 +16,4 @@ public class StartUITest {
         assertThat(created.getName()).isEqualTo(expected.getName());
         assertThat(created.getId()).isEqualTo(expected.getId());
     }
-
-    @Test
-    void showAllItems() {
-    }
-
-    @Test
-    void editItem() {
-    }
-
-    @Test
-    void deteleItem() {
-    }
-
-    @Test
-    void findItemById() {
-    }
-
-    @Test
-    void findItemByName() {
-    }
-
-    @Test
-    void init() {
-    }
 }
