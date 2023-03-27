@@ -1,64 +1,59 @@
 package ru.job4j.early;
 
-import static java.lang.Character.*;
-
 public class PasswordValidator {
-    private static final int MIN_LENGTH = 8;
-    private static final int MAX_LENGTH = 32;
-    private static final String[] SPECIAL_SUBSTRINGS = {
+    private static final int MIN_LENGTH_PASSWORD = 8;
+    private static final int MAX_LENGTH_PASSWORD = 32;
+    private static final String[] BAD_SUBSTRINGS = {
             "qwerty",
             "12345",
             "password",
             "admin",
-            "user"};
+            "user"
+    };
 
     private static boolean lengthBetween(String password) {
-        return password.length() >= MIN_LENGTH && password.length() <= MAX_LENGTH;
+        return password.length() >= MIN_LENGTH_PASSWORD && password.length() <= MAX_LENGTH_PASSWORD;
     }
 
-    private static boolean existsUpperCaseLetter(String password) {
-        char[] chars = password.toCharArray();
-        for (char aChar : chars) {
-            if (isUpperCase(aChar)) {
-                return true;
+    private static boolean allChecksIsCondition(SymbolInGroup[] checks) {
+        for (SymbolInGroup check : checks) {
+            if (!check.isFound()) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
-    private static boolean existsLowerCaseLetter(String password) {
-        char[] chars = password.toCharArray();
-        for (char aChar : chars) {
-            if (isLowerCase(aChar)) {
-                return true;
+    private static void throwFirstException(SymbolInGroup[] checks) {
+        for (SymbolInGroup check : checks) {
+            if (!check.isFound()) {
+                check.throwException();
             }
         }
-        return false;
     }
 
-    private static boolean existsDigit(String password) {
+    private static void existsMatchForAllGroups(String password) {
         char[] chars = password.toCharArray();
+        SymbolInGroup[] checks = {
+                new IsUpperCase(),
+                new IsLowerCase(),
+                new IsDigit(),
+                new IsNotLetterOrDigit()
+        };
         for (char aChar : chars) {
-            if (isDigit(aChar)) {
-                return true;
+            for (SymbolInGroup check : checks) {
+                check.isSymbolInGroup(aChar);
+            }
+            if (allChecksIsCondition(checks)) {
+                return;
             }
         }
-        return false;
-    }
-
-    private static boolean existsSpecialSymbol(String password) {
-        char[] chars = password.toCharArray();
-        for (char aChar : chars) {
-            if (!isLetterOrDigit(aChar)) {
-                return true;
-            }
-        }
-        return false;
+        throwFirstException(checks);
     }
 
     private static boolean existsSpecialSubstring(String password) {
-        for (String specialSubstring : SPECIAL_SUBSTRINGS) {
-            if (password.toUpperCase().contains(specialSubstring.toUpperCase())) {
+        for (String badSubstring : BAD_SUBSTRINGS) {
+            if (password.toUpperCase().contains(badSubstring.toUpperCase())) {
                 return true;
             }
         }
@@ -70,22 +65,11 @@ public class PasswordValidator {
             throw new IllegalArgumentException("Password can't be null");
         }
         if (!lengthBetween(password)) {
-            throw new IllegalArgumentException("Password should be length [8, 32]");
+            throw new IllegalArgumentException("Password should be length [" + MIN_LENGTH_PASSWORD + ", " + MAX_LENGTH_PASSWORD + "]");
         }
-        if (!existsUpperCaseLetter(password)) {
-            throw new IllegalArgumentException("Password should contain at least one uppercase letter");
-        }
-        if (!existsLowerCaseLetter(password)) {
-            throw new IllegalArgumentException("Password should contain at least one lowercase letter");
-        }
-        if (!existsDigit(password)) {
-            throw new IllegalArgumentException("Password should contain at least one figure");
-        }
-        if (!existsSpecialSymbol(password)) {
-            throw new IllegalArgumentException("Password should contain at least one special symbol");
-        }
+        existsMatchForAllGroups(password);
         if (existsSpecialSubstring(password)) {
-            throw new IllegalArgumentException("Password shouldn't contain substrings: qwerty, 12345, password, admin, user");
+            throw new IllegalArgumentException("Password shouldn't contain substrings: " + String.join(", ", BAD_SUBSTRINGS));
         }
         return password;
     }
