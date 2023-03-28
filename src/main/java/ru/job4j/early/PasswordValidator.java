@@ -1,5 +1,7 @@
 package ru.job4j.early;
 
+import static java.lang.Character.*;
+
 public class PasswordValidator {
     private static final int MIN_LENGTH_PASSWORD = 8;
     private static final int MAX_LENGTH_PASSWORD = 32;
@@ -15,36 +17,50 @@ public class PasswordValidator {
         return password.length() >= MIN_LENGTH_PASSWORD && password.length() <= MAX_LENGTH_PASSWORD;
     }
 
-    private static boolean allChecksIsCondition(SymbolInGroup[] checks) {
-        for (SymbolInGroup check : checks) {
-            if (!check.isFound()) {
+    private static final String[] SYMBOL_CHECKS_AND_E_MESSAGE = {
+            "Password should contain at least one uppercase letter",
+            "Password should contain at least one lowercase letter",
+            "Password should contain at least one figure",
+            "Password should contain at least one special symbol"
+    };
+
+    public static boolean isSymbolInGroup(char symbol, int type) {
+        return switch (type) {
+            case 0 -> isUpperCase(symbol);
+            case 1 -> isLowerCase(symbol);
+            case 2 -> isDigit(symbol);
+            case 3 -> !isLetterOrDigit(symbol);
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+    }
+
+    private static boolean allChecksIsTrue(boolean[] checks) {
+        for (boolean check : checks) {
+            if (!check) {
                 return false;
             }
         }
         return true;
     }
 
-    private static void throwFirstException(SymbolInGroup[] checks) {
-        for (SymbolInGroup check : checks) {
-            if (!check.isFound()) {
-                check.throwException();
+    private static void throwFirstException(boolean[] checks) {
+        for (int i = 0; i < checks.length; i++) {
+            if (!checks[i]) {
+                throw new IllegalArgumentException(SYMBOL_CHECKS_AND_E_MESSAGE[i]);
             }
         }
     }
 
     private static void existsMatchForAllGroups(String password) {
         char[] chars = password.toCharArray();
-        SymbolInGroup[] checks = {
-                new IsUpperCase(),
-                new IsLowerCase(),
-                new IsDigit(),
-                new IsNotLetterOrDigit()
-        };
+        boolean[] checks = new boolean[SYMBOL_CHECKS_AND_E_MESSAGE.length];
         for (char aChar : chars) {
-            for (SymbolInGroup check : checks) {
-                check.isSymbolInGroup(aChar);
+            for (int i = 0; i < checks.length; i++) {
+                if (!checks[i]) {
+                    checks[i] = isSymbolInGroup(aChar, i);
+                }
             }
-            if (allChecksIsCondition(checks)) {
+            if (allChecksIsTrue(checks)) {
                 return;
             }
         }
