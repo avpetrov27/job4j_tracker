@@ -3,168 +3,73 @@ package ru.job4j.early;
 import static java.lang.Character.*;
 
 public class PasswordValidator {
-    private static final int MIN_LENGTH = 8;
-    private static final int MAX_LENGTH = 32;
-    private static final String[] SPECIAL_SUBSTRINGS = {
+    private static final int MIN_LENGTH_PASSWORD = 8;
+    private static final int MAX_LENGTH_PASSWORD = 32;
+    private static final String[] BAD_SUBSTRINGS = {
             "qwerty",
             "12345",
             "password",
             "admin",
-            "user"};
+            "user"
+    };
 
-    private static boolean lengthBetween(String password) {
-        return password.length() >= MIN_LENGTH && password.length() <= MAX_LENGTH;
-    }
+    private static final String[] SYMBOL_CHECKS_AND_E_MESSAGE = {
+            "Password should contain at least one uppercase letter",
+            "Password should contain at least one lowercase letter",
+            "Password should contain at least one figure",
+            "Password should contain at least one special symbol"
+    };
 
-    private enum SymbolChecks {
-        IS_UPPER_CASE {
-            private boolean found = false;
-
-            @Override
-            public void checking(char symbol) {
-                if (isUpperCase(symbol)) {
-                    found = true;
-                }
-            }
-
-            @Override
-            public boolean isFound() {
-                return found;
-            }
-
-            @Override
-            public void throwException() {
-                throw new IllegalArgumentException("Password should contain at least one uppercase letter");
-            }
-
-            @Override
-            public void reset() {
-                found = false;
-            }
-        },
-        IS_LOWER_CASE {
-            private boolean found = false;
-
-            @Override
-            public void checking(char symbol) {
-                if (isLowerCase(symbol)) {
-                    found = true;
-                }
-            }
-
-            @Override
-            public boolean isFound() {
-                return found;
-            }
-
-            @Override
-            public void throwException() {
-                throw new IllegalArgumentException("Password should contain at least one lowercase letter");
-            }
-
-            @Override
-            public void reset() {
-                found = false;
-            }
-        },
-        IS_DIGIT {
-            private boolean found = false;
-
-            @Override
-            public void checking(char symbol) {
-                if (isDigit(symbol)) {
-                    found = true;
-                }
-            }
-
-            @Override
-            public boolean isFound() {
-                return found;
-            }
-
-            @Override
-            public void throwException() {
-                throw new IllegalArgumentException("Password should contain at least one figure");
-            }
-
-            @Override
-            public void reset() {
-                found = false;
-            }
-        },
-        IS_NOT_LETTER_OR_DIGIT {
-            public boolean found = false;
-
-            @Override
-            public void checking(char symbol) {
-                if (!isLetterOrDigit(symbol)) {
-                    found = true;
-                }
-            }
-
-            @Override
-            public boolean isFound() {
-                return found;
-            }
-
-            @Override
-            public void throwException() {
-                throw new IllegalArgumentException("Password should contain at least one special symbol");
-            }
-
-            @Override
-            public void reset() {
-                found = false;
-            }
+    private static boolean isSymbolInGroup(char symbol, int type) {
+        return switch (type) {
+            case 0 -> isUpperCase(symbol);
+            case 1 -> isLowerCase(symbol);
+            case 2 -> isDigit(symbol);
+            case 3 -> !isLetterOrDigit(symbol);
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         };
-
-        public abstract boolean isFound();
-
-        public abstract void checking(char symbol);
-
-        public abstract void throwException();
-
-        public abstract void reset();
     }
 
-    private static boolean allChecksIsCondition(boolean condition) {
-        for (SymbolChecks check : SymbolChecks.values()) {
-            if (condition != check.isFound()) {
+    private static boolean allChecksIsTrue(boolean[] checks) {
+        for (boolean check : checks) {
+            if (!check) {
                 return false;
             }
         }
         return true;
     }
 
-    private static void resetSymbolChecks() {
-        for (SymbolChecks check : SymbolChecks.values()) {
-            check.reset();
+    private static void throwFirstException(boolean[] checks) {
+        for (int i = 0; i < checks.length; i++) {
+            if (!checks[i]) {
+                throw new IllegalArgumentException(SYMBOL_CHECKS_AND_E_MESSAGE[i]);
+            }
         }
     }
 
-    private static void existsAllValidateSymbol(String password) {
+    private static void existsMatchForAllGroups(String password) {
         char[] chars = password.toCharArray();
-        resetSymbolChecks();
-        for (char symbol : chars) {
-            for (SymbolChecks check : SymbolChecks.values()) {
-                if (!check.isFound()) {
-                    check.checking(symbol);
+        boolean[] checks = new boolean[SYMBOL_CHECKS_AND_E_MESSAGE.length];
+        for (char aChar : chars) {
+            for (int i = 0; i < checks.length; i++) {
+                if (!checks[i]) {
+                    checks[i] = isSymbolInGroup(aChar, i);
                 }
             }
-            if (allChecksIsCondition(true)) {
+            if (allChecksIsTrue(checks)) {
                 return;
             }
         }
-        for (SymbolChecks check : SymbolChecks.values()) {
-            if (!check.isFound()) {
-                check.throwException();
-            }
-        }
+        throwFirstException(checks);
     }
 
-    private static boolean existsSpecialSubstring(String password) {
-        for (String specialSubstring : SPECIAL_SUBSTRINGS) {
-            if (password.toUpperCase().contains(specialSubstring.toUpperCase())) {
+    private static boolean lengthBetween(String password) {
+        return password.length() >= MIN_LENGTH_PASSWORD && password.length() <= MAX_LENGTH_PASSWORD;
+    }
+
+    private static boolean existsBadSubstring(String password) {
+        for (String badSubstring : BAD_SUBSTRINGS) {
+            if (password.toUpperCase().contains(badSubstring.toUpperCase())) {
                 return true;
             }
         }
@@ -176,11 +81,11 @@ public class PasswordValidator {
             throw new IllegalArgumentException("Password can't be null");
         }
         if (!lengthBetween(password)) {
-            throw new IllegalArgumentException("Password should be length [" + MIN_LENGTH + ", " + MAX_LENGTH + "]");
+            throw new IllegalArgumentException("Password should be length [" + MIN_LENGTH_PASSWORD + ", " + MAX_LENGTH_PASSWORD + "]");
         }
-        existsAllValidateSymbol(password);
-        if (existsSpecialSubstring(password)) {
-            throw new IllegalArgumentException("Password shouldn't contain substrings: " + String.join(", ", SPECIAL_SUBSTRINGS));
+        existsMatchForAllGroups(password);
+        if (existsBadSubstring(password)) {
+            throw new IllegalArgumentException("Password shouldn't contain substrings: " + String.join(", ", BAD_SUBSTRINGS));
         }
         return password;
     }
