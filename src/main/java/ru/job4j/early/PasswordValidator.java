@@ -13,10 +13,6 @@ public class PasswordValidator {
             "user"
     };
 
-    private static boolean lengthBetween(String password) {
-        return password.length() >= MIN_LENGTH_PASSWORD && password.length() <= MAX_LENGTH_PASSWORD;
-    }
-
     private static final String[] SYMBOL_CHECKS_AND_E_MESSAGE = {
             "Password should contain at least one uppercase letter",
             "Password should contain at least one lowercase letter",
@@ -24,7 +20,7 @@ public class PasswordValidator {
             "Password should contain at least one special symbol"
     };
 
-    public static boolean isSymbolInGroup(char symbol, int type) {
+    private static boolean isSymbolInGroup(char symbol, int type) {
         return switch (type) {
             case 0 -> isUpperCase(symbol);
             case 1 -> isLowerCase(symbol);
@@ -67,7 +63,11 @@ public class PasswordValidator {
         throwFirstException(checks);
     }
 
-    private static boolean existsSpecialSubstring(String password) {
+    private static boolean lengthBetween(String password) {
+        return password.length() >= MIN_LENGTH_PASSWORD && password.length() <= MAX_LENGTH_PASSWORD;
+    }
+
+    private static boolean existsBadSubstring(String password) {
         for (String badSubstring : BAD_SUBSTRINGS) {
             if (password.toUpperCase().contains(badSubstring.toUpperCase())) {
                 return true;
@@ -84,7 +84,7 @@ public class PasswordValidator {
             throw new IllegalArgumentException("Password should be length [" + MIN_LENGTH_PASSWORD + ", " + MAX_LENGTH_PASSWORD + "]");
         }
         existsMatchForAllGroups(password);
-        if (existsSpecialSubstring(password)) {
+        if (existsBadSubstring(password)) {
             throw new IllegalArgumentException("Password shouldn't contain substrings: " + String.join(", ", BAD_SUBSTRINGS));
         }
         return password;
