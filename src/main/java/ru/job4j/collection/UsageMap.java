@@ -10,6 +10,8 @@ public class UsageMap {
         map.put("zPochta@yandex.ru", "PetrovAV");
         map.put("0Pochta@yandex.ru", "PetrovAV");
         map.put("aPochta@yandex.ru", "PetrovAV");
+        map.put("aPochta@yandex.ru", "PetrovAV2");
+        map.put("aPochta@yandex.ru", "PetrovAV3");
         for (String key : map.keySet()) {
             System.out.println(key + " = " + map.get(key));
         }
