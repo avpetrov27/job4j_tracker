@@ -1,7 +1,6 @@
 package ru.job4j.queue;
 
 import java.util.Deque;
-import java.util.Iterator;
 
 public class ReconstructPhrase {
     private final Deque<Character> descendingElements;
@@ -27,9 +26,9 @@ public class ReconstructPhrase {
 
     private String getDescendingElements() {
         StringBuilder s = new StringBuilder();
-        Iterator<Character> iterator = descendingElements.descendingIterator();
-        while (iterator.hasNext()) {
-            s.append(iterator.next());
+        int size = descendingElements.size();
+        for (int i = 0; i < size; i++) {
+            s.append(descendingElements.pollLast());
         }
         return String.valueOf(s);
     }
