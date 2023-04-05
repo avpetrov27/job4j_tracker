@@ -50,15 +50,12 @@ public class BankService {
                                  String destPassport, String destRequisite, double amount) {
         Account source = findByRequisite(srcPassport, srcRequisite);
         Account destination = findByRequisite(destPassport, destRequisite);
-        if (source == null || destination == null) {
+        if (source == null || destination == null || source.getBalance() < amount) {
             return false;
         }
-        if (source.getBalance() >= amount) {
-            source.setBalance(source.getBalance() - amount);
-            destination.setBalance(destination.getBalance() + amount);
-            return true;
-        }
-        return false;
+        source.setBalance(source.getBalance() - amount);
+        destination.setBalance(destination.getBalance() + amount);
+        return true;
     }
 
     public List<Account> getAccounts(User user) {
