@@ -131,7 +131,7 @@ public class BankService {
      * Метод возвращает список банковских счётов клиента
      *
      * @param user - клиент
-     * @return - список счетов ist<Account>
+     * @return - список счетов Account
      */
     public List<Account> getAccounts(User user) {
         return users.get(user);
