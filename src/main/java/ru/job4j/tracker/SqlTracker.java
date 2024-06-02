@@ -44,10 +44,11 @@ public class SqlTracker implements Store {
     public Item add(Item item) {
         try (PreparedStatement statement =
                      connection.prepareStatement(
-                             "INSERT INTO items(name, created) VALUES (?, ?) RETURNING (id)")) {
+                             "INSERT INTO items(name, created) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, item.getName());
             statement.setTimestamp(2, Timestamp.valueOf(item.getCreated()));
-            try (ResultSet resultSet = statement.executeQuery()) {
+            statement.execute();
+            try (ResultSet resultSet = statement.getGeneratedKeys()) {
                 while (resultSet.next()) {
                     item.setId(resultSet.getInt("id"));
                 }
