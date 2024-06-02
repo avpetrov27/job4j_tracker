@@ -2,7 +2,6 @@ package ru.job4j.tracker;
 
 import org.junit.jupiter.api.*;
 
-
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -71,6 +70,21 @@ public class SqlTrackerTest {
         tracker.add(item0);
         tracker.delete(item0.getId());
         assertThat(tracker.findById(item0.getId())).isNull();
+    }
+
+    @Test
+    public void whenDeleteOneOtherStay() {
+        SqlTracker tracker = new SqlTracker(connection);
+        Item item0 = new Item("item10");
+        Item item1 = new Item("item11");
+        Item item2 = new Item("item12");
+        tracker.add(item0);
+        tracker.add(item1);
+        tracker.add(item2);
+        tracker.delete(item1.getId());
+        assertThat(tracker.findById(item1.getId())).isNull();
+        assertThat(tracker.findAll().size()).isEqualTo(2);
+        Assertions.assertArrayEquals(tracker.findAll().toArray(), List.of(item0, item2).toArray());
     }
 
     @Test
